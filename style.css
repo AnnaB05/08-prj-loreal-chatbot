@@ -5,29 +5,65 @@
   padding: 0;
 }
 
+/* Brand colors (L'Oréal-style) */
+:root {
+  --brand-black: #000000;
+  --brand-gold: #b9934a; /* elegant gold accent */
+  --muted-text: #666666;
+  --panel-bg: #ffffff;
+  --brand-white: #ffffff;
+}
+
 /* —— body + fonts —— */
 body {
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
-  color: #333;
+  color: var(--brand-black);
   display: flex;
   justify-content: center;
+  background: #faf9f7; /* subtle warm background */
 }
 
 .page-wrapper {
-  width: 90%;
-  max-width: 900px;
+  /* increase max width and center, add horizontal padding to reduce large gutters */
+  width: 100%;
+  max-width: 1100px; /* wider on desktop to reduce white space */
+  margin: 0 auto;
+  padding: 0 24px; /* keep some breathing room on small screens */
 }
 
 /* header */
 .site-header {
   text-align: center;
-  padding-top: 50px;
+  padding-top: 36px;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  background: var(--brand-black);
+  color: var(--brand-white);
+  padding: 20px 18px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
+/* Logo sizing */
+.brand-logo {
+  max-height: 48px;
+  display: inline-block;
+  object-fit: contain;
+  /* If the logo image is dark, invert it on dark background so it shows */
+  filter: brightness(0) invert(1);
+}
+
+/* site title uses brand gold to pair with the logo */
 .site-title {
   font-size: 22px;
-  font-weight: 500;
-  margin-bottom: 10px;
+  font-weight: 600;
+  margin-bottom: 0;
+  color: var(--brand-gold);
+  letter-spacing: 0.2px;
 }
 
 /* chat window */
@@ -35,29 +71,81 @@ body {
   margin: 40px 0;
 }
 
-.chat-window {
-  height: 360px;
-  border: 1px solid #000;
-  padding: 20px;
-  font-size: 18px;
-  line-height: 1.5;
-  overflow-y: auto;
-  background: #fafafa;
-  white-space: pre-line;
+/* Latest question shown above assistant response */
+.latest-question {
+  display: block;
+  margin: 8px 0 10px;
+  padding: 10px 14px;
+  background: rgba(185, 147, 74, 0.06);
+  border-left: 3px solid var(--brand-gold);
+  color: var(--brand-black);
+  font-style: italic;
+  border-radius: 6px;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 /* messages */
 .msg {
-  margin-bottom: 14px;
-  line-height: 1.5;
+  display: flex;
+  margin-bottom: 12px;
+  width: 100%; /* ensure the wrapper spans full width so align-self works */
 }
 
-.msg.user {
-  color: #000;
+/* bubble element contains the text and styles */
+.msg .bubble {
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 16px;
+  line-height: 1.4;
+  word-break: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
+/* Assistant (AI) messages: left aligned, neutral background */
 .msg.ai {
-  color: #666666;
+  justify-content: flex-start;
+  align-self: flex-start; /* ensure wrapper aligns left in the chat column */
+}
+.msg.ai .bubble {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--muted-text);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 16px;
+  max-width: 70%; /* limit bubble width for readability */
+}
+
+/* User messages: right aligned, brand gold background */
+.msg.user {
+  justify-content: flex-end;
+  align-self: flex-end; /* ensure wrapper aligns right in the chat column */
+}
+.msg.user .bubble {
+  background: var(--brand-gold);
+  color: var(--brand-black);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 16px;
+  max-width: 70%; /* limit bubble width for readability */
+}
+
+/* Keep chat window stacked top-to-bottom */
+.chat-window {
+  height: 360px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 20px;
+  font-size: 18px;
+  line-height: 1.5;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  white-space: pre-line;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
 }
 
 /* input row */
@@ -67,22 +155,21 @@ body {
   margin-top: 16px;
 }
 
+/* input field */
 .chat-form input {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #e6e0d6;
   font-size: 18px;
+  background: #fff;
+  color: var(--brand-black);
 }
 
-.chat-form input:focus {
-  outline: 2px solid #000;
-  outline-offset: 2px;
-}
-
+/* submit button uses brand gold */
 .chat-form button {
   font-size: 18px;
-  background: #000;
-  color: #fff;
+  background: var(--brand-gold);
+  color: var(--brand-black);
   border: none;
   padding: 12px;
   width: 48px;
@@ -91,20 +178,12 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.3s;
-}
-
-.chat-form button .material-icons {
-  font-size: 24px;
+  transition: opacity 0.2s ease;
+  border-radius: 6px;
 }
 
 .chat-form button:hover {
-  background: #666666;
-}
-
-.chat-form button:focus {
-  outline: 2px solid #000;
-  outline-offset: 2px;
+  opacity: 0.9;
 }
 
 /* visually hidden */
@@ -120,24 +199,98 @@ body {
   border: 0;
 }
 
-/* footer */
+/* footer tweaks */
 .site-footer {
   margin: 60px 0 40px;
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: var(--muted-text);
+  background: var(--brand-black);
+  color: var(--brand-white);
+  padding: 18px;
+  border-radius: 8px;
+  margin: 36px 0 20px;
 }
 
-.site-footer nav {
-  margin-top: 12px;
-}
-
+/* Footer links in gold for emphasis */
 .site-footer a {
-  margin: 0 8px;
-  color: #000;
+  color: var(--brand-gold);
   text-decoration: none;
+  margin: 0 8px;
 }
 
-.site-footer a:hover {
-  color: #666666;
+/* Ensure the SVG fallback logo is visible on dark header */
+.brand-logo-fallback text {
+  fill: var(--brand-white);
+  font-weight: 600;
+}
+
+/* Monotype case study note */
+.case-study-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted-text);
+}
+
+.case-study-note a {
+  color: var(--brand-black);
+  text-decoration: underline;
+}
+
+/* On larger screens, tighten bubble width and increase chat window padding */
+@media (min-width: 900px) {
+  .page-wrapper {
+    padding: 0 32px;
+    max-width: 1200px;
+  }
+
+  .chat-window {
+    padding: 28px;
+  }
+
+  /* make message bubbles narrower relative to the available space */
+  .msg {
+    max-width: 70%;
+  }
+}
+
+/* Extra-wide screens: allow the container to grow but keep comfortable line length */
+@media (min-width: 1400px) {
+  .page-wrapper {
+    max-width: 1400px;
+    padding: 0 48px;
+  }
+
+  .chat-window {
+    padding: 36px;
+  }
+
+  .msg {
+    max-width: 60%;
+  }
+}
+
+/* Mobile: reduce padding and ensure bubbles fill narrow view */
+@media (max-width: 479px) {
+  .page-wrapper {
+    padding: 0 12px;
+  }
+
+  .brand-logo {
+    max-height: 40px;
+  }
+  .chat-window {
+    padding: 14px;
+    height: 320px;
+  }
+  .msg {
+    max-width: 100%;
+  }
+  .msg .bubble {
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+  .site-title {
+    font-size: 18px;
+  }
 }

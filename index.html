@@ -19,12 +19,26 @@
     <div class="page-wrapper">
       <!------- Header / Branding ------->
       <header class="site-header">
+        <!-- give the img an id and explicit relative path -->
+        <img
+          id="brandLogo"
+          src="./loreal-logo.png"
+          alt="L'Oréal"
+          class="brand-logo"
+        />
         <h1 class="site-title">Smart Product Advisor</h1>
       </header>
 
       <!------- Chat Area ------->
       <main>
         <section class="chatbox">
+          <!-- Latest user question (updates on each submit) -->
+          <div
+            id="latestQuestion"
+            class="latest-question visually-hidden"
+            aria-live="polite"
+          ></div>
+
           <div id="chatWindow" class="chat-window">
             <!-- messages will be appended here via JS -->
           </div>
@@ -56,6 +70,18 @@
           <a href="#">Terms of Use</a>
           <a href="#">Contact</a>
         </nav>
+
+        <!-- Link to Monotype case study for review of L'Oréal typography -->
+        <!-- Monotype case study: https://www.monotype.com/resources/case-studies/loreal (review typography choices) -->
+        <p class="case-study-note">
+          Font case study:
+          <a
+            href="https://www.monotype.com/resources/case-studies/loreal"
+            target="_blank"
+            rel="noopener"
+            >Monotype — L'Oréal</a
+          >
+        </p>
       </footer>
     </div>
 

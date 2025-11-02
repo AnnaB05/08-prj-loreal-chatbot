@@ -13,6 +13,9 @@ Only provide answers related to L'Oréal and its official offerings. If a questi
   },
 ];
 
+//cloudflare worker
+const workerUrl = "https://loreal-worker.aebake03.workers.dev/";
+
 // Replace direct textContent with an assistant message added to conversation
 const initialGreeting = "👋 Hello! How can I help you today?";
 // Add greeting to conversation history (assistant role) so it's sent on first API call
@@ -20,17 +23,31 @@ conversation.push({ role: "assistant", content: initialGreeting });
 // Render greeting in the chat window using the helper (preserves formatting)
 appendMessage("ai", initialGreeting);
 
-/* Helper: append a message element to the chat window
-   We use textContent so that newlines are preserved. The container has CSS white-space: pre-line. */
+/* Helper: append a message element to the chat window as a "bubble"
+   - role: "user" or "ai"
+   - text: message content
+*/
 function appendMessage(role, text) {
-  const div = document.createElement("div");
-  div.className = `msg ${role}`;
-  // Prefix label for clarity (students can remove if undesired)
-  const label = role === "user" ? "You: " : "Assistant: ";
-  div.textContent = `${label}${text}`;
-  chatWindow.appendChild(div);
-  // Keep the latest message in view
+  const wrapper = document.createElement("div");
+  wrapper.className = `msg ${role}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  // Use textContent to preserve newlines; CSS white-space: pre-line renders them
+  bubble.textContent = text;
+
+  wrapper.appendChild(bubble);
+  chatWindow.appendChild(wrapper);
   chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+/* Show the user's latest question above the chat responses.
+   This element is updated on every submit (replaces previous content). */
+function showLatestQuestion(text) {
+  const latest = document.getElementById("latestQuestion");
+  if (!latest) return;
+  latest.textContent = `Your question: ${text}`;
+  latest.classList.remove("visually-hidden");
 }
 
 /* Call OpenAI's chat completions endpoint using fetch and async/await.
@@ -39,14 +56,12 @@ function appendMessage(role, text) {
 */
 async function callOpenAI(messages) {
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(workerUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`, // OPENAI_API_KEY comes from secrets.js
       },
       body: JSON.stringify({
-        model: "gpt-4o",
         messages: messages,
       }),
     });
@@ -72,36 +87,37 @@ chatForm.addEventListener("submit", async (e) => {
   const userText = userInput.value.trim();
   if (!userText) return;
 
-  // Append user message to conversation and UI
+  // show latest question (replaces previous)
+  showLatestQuestion(userText);
+
+  // Append user bubble to the conversation area (right aligned)
   conversation.push({ role: "user", content: userText });
   appendMessage("user", userText);
 
-  // Show loading indicator
+  // Show loading indicator (assistant bubble)
   const loading = document.createElement("div");
   loading.className = "msg ai";
-  loading.textContent = "Assistant: ...typing...";
+  const loadingBubble = document.createElement("div");
+  loadingBubble.className = "bubble";
+  loadingBubble.textContent = "Assistant: ...typing...";
+  loading.appendChild(loadingBubble);
   chatWindow.appendChild(loading);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
-  // Clear input for convenience
   userInput.value = "";
   userInput.focus();
 
   try {
     const assistantReply = await callOpenAI(conversation);
-    // Remove loading indicator
     loading.remove();
 
     if (assistantReply) {
-      // Add assistant message to conversation for future context
       conversation.push({ role: "assistant", content: assistantReply });
-      // Render assistant reply (textContent preserves newlines; CSS pre-line displays them)
       appendMessage("ai", assistantReply);
     } else {
       appendMessage("ai", "Sorry — no response from the assistant.");
     }
   } catch (err) {
-    // Replace loading with an error message for the user
     loading.remove();
     appendMessage(
       "ai",
@@ -109,3 +125,48 @@ chatForm.addEventListener("submit", async (e) => {
     );
   }
 });
+
+// Logo load checker + fallback
+(function verifyLogo() {
+  const logo = document.getElementById("brandLogo");
+  if (!logo) return;
+
+  // Hide until we confirm the image loads to avoid broken-image icon
+  logo.style.visibility = "hidden";
+
+  const tryPaths = [
+    logo.src,
+    "assets/loreal-logo.png",
+    "./assets/loreal-logo.png",
+  ];
+  let attempt = 0;
+
+  function tryLoad(path) {
+    const img = new Image();
+    img.onload = () => {
+      // success: set the visible src and show it
+      logo.src = path;
+      logo.style.visibility = "";
+    };
+    img.onerror = () => {
+      attempt += 1;
+      if (attempt < tryPaths.length) {
+        tryLoad(tryPaths[attempt]);
+      } else {
+        console.warn("Logo not found at any tested path:", tryPaths);
+        // Fallback: replace the img with a simple inline SVG text so branding remains visible
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("viewBox", "0 0 240 48");
+        svg.setAttribute("class", "brand-logo-fallback");
+        svg.innerHTML = `<text x="0" y="36" font-family="Montserrat, Arial, Helvetica, sans-serif" font-size="34" fill="#000">L'ORÉAL</text>`;
+        logo.replaceWith(svg);
+      }
+    };
+    img.src = path;
+  }
+
+  tryLoad(tryPaths[attempt]);
+})();
